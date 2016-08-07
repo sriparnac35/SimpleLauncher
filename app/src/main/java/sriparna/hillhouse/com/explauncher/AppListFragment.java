@@ -1,13 +1,16 @@
 package sriparna.hillhouse.com.explauncher;
 
 import android.content.pm.ApplicationInfo;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ProgressBar;
@@ -16,7 +19,7 @@ import java.util.List;
 /**
  * Created by sriparna on 07/08/16.
  */
-public class AppListActivity extends AppCompatActivity
+public class AppListFragment extends Fragment
         implements AppsPresenter.OnDataAvailableListener{
     private RecyclerView mRecyclerView = null;
     private ProgressBar mProgressBar = null;
@@ -24,26 +27,23 @@ public class AppListActivity extends AppCompatActivity
     private AppsPresenter mAppsPresenter = null;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState){
-        super.onCreate(savedInstanceState);
-        supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        setContentView(R.layout.all_apps);
-        mRecyclerView = (RecyclerView)findViewById(R.id.apps_list);
-        mProgressBar = (ProgressBar)findViewById(R.id.loading_indicator);
+    public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState){
+        View view = inflater.inflate(R.layout.all_apps, parent, false);
+        mRecyclerView = (RecyclerView)view.findViewById(R.id.apps_list);
+        mProgressBar = (ProgressBar)view.findViewById(R.id.loading_indicator);
+        return view;
     }
 
     @Override
-    protected void onStart(){
+    public void onStart(){
         super.onStart();
-        mAppsPresenter = new AppsPresenter(this);
-        mRecyclerViewAdapter = new AppListAdapter(this);
+        mAppsPresenter = new AppsPresenter(getActivity());
+        mRecyclerViewAdapter = new AppListAdapter(getActivity());
 
         mAppsPresenter.dataAvailableListener = this;
         mRecyclerViewAdapter.mListener = mAppsPresenter;
 
-        GridLayoutManager layoutManager = new GridLayoutManager(this, 4);
+        GridLayoutManager layoutManager = new GridLayoutManager(getActivity(), 4);
         mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.setAdapter(mRecyclerViewAdapter);
 

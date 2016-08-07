@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
@@ -22,7 +23,7 @@ import java.util.List;
  */
 public class AppsPresenter implements AppListAdapter.OnAppClickListener,
         LoaderManager.LoaderCallbacks<List<AppData>> {
-    private AppCompatActivity mContext = null;
+    private FragmentActivity mContext = null;
     private PackageManager mPackageManager = null;
 
     private List<AppData> mAppsList= null;
@@ -31,7 +32,7 @@ public class AppsPresenter implements AppListAdapter.OnAppClickListener,
     private static final int ALL_APPS_ASYNC_LOADER = 2;
 
 
-    public AppsPresenter(AppCompatActivity context){
+    public AppsPresenter(FragmentActivity context){
         mContext = context;
         mPackageManager = mContext.getPackageManager();
 

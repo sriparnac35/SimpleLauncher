@@ -1,10 +1,17 @@
 package sriparna.hillhouse.com.explauncher;
 
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
+import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,43 +20,54 @@ import java.util.List;
 /**
  * Created by sriparna on 07/08/16.
  */
-public class AppsPresenter implements AppListAdapter.OnAppClickListener{
-    private Context mContext = null;
+public class AppsPresenter implements AppListAdapter.OnAppClickListener,
+        LoaderManager.LoaderCallbacks<List<AppData>> {
+    private AppCompatActivity mContext = null;
     private PackageManager mPackageManager = null;
-    private Intent mAllAppsIntent = null;
+
     private List<AppData> mAppsList= null;
     public OnDataAvailableListener dataAvailableListener = null;
 
+    private static final int ALL_APPS_ASYNC_LOADER = 2;
 
-    public AppsPresenter(Context context){
+
+    public AppsPresenter(AppCompatActivity context){
         mContext = context;
         mPackageManager = mContext.getPackageManager();
-        mAllAppsIntent = new Intent();
-        mAllAppsIntent.setAction(Intent.ACTION_MAIN);
-        mAllAppsIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+
         mAppsList = new ArrayList<>();
     }
 
     public void loadAppsData(){
-        List<ResolveInfo> intentList = mPackageManager.
-                queryIntentActivities(mAllAppsIntent,  PackageManager.MATCH_ALL  );
-
-        for(ResolveInfo info : intentList){
-            AppData data = new AppData();
-            data.icon = info.loadIcon(mPackageManager);
-            data.label = (String) info.loadLabel(mPackageManager);
-            data.packageName = info.activityInfo.packageName;
-            mAppsList.add(data);
-        }
-        if(dataAvailableListener != null){
-            dataAvailableListener.onNewDataAvailable(mAppsList);
-        }
+        mContext.getSupportLoaderManager().initLoader(ALL_APPS_ASYNC_LOADER, null, this);
     }
 
     @Override
     public void onAppCellClicked(View view, AppData data) {
         Intent intent = mPackageManager.getLaunchIntentForPackage(data.packageName);
         mContext.startActivity(intent);
+    }
+
+    @Override
+    public Loader onCreateLoader(int id, Bundle args) {
+        return new AllAppsAsyncTaskLoader(mContext);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<List<AppData>> loader, List<AppData> data) {
+        mAppsList.clear();
+        mAppsList.addAll(data);
+        if(dataAvailableListener != null){
+            dataAvailableListener.onNewDataAvailable(mAppsList);
+        }
+    }
+
+    @Override
+    public void onLoaderReset(Loader loader) {
+        mAppsList.clear();
+        if(dataAvailableListener != null){
+            dataAvailableListener.onNewDataAvailable(mAppsList);
+        }
     }
 
     public interface OnDataAvailableListener{
